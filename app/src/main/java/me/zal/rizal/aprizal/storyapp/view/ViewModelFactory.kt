@@ -2,7 +2,6 @@ package me.zal.rizal.aprizal.storyapp.view
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import me.zal.rizal.aprizal.storyapp.view.model.MainViewModel
 import me.zal.rizal.aprizal.storyapp.view.model.SignInViewModel
 import me.zal.rizal.aprizal.storyapp.view.model.SignupViewModel
 import me.zal.rizal.aprizal.storyapp.view.model.StoryViewModel
@@ -15,9 +14,6 @@ class ViewModelFactory(private val pref: UsersPreference) : ViewModelProvider.Ne
         return when {
             modelClass.isAssignableFrom(StoryViewModel::class.java) -> {
                 StoryViewModel(pref) as T
-            }
-            modelClass.isAssignableFrom(MainViewModel::class.java) -> {
-                MainViewModel(pref) as T
             }
             modelClass.isAssignableFrom(SignupViewModel::class.java) -> {
                 SignupViewModel(pref) as T

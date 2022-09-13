@@ -12,23 +12,26 @@
         android:layout_margin="@dimen/margin_constraint">
 
         <ImageView
-            android:id="@+id/image"
+            android:id="@+id/image_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_constraint"
             android:contentDescription="@string/app_name"
-            tools:ignore="ImageContrastCheck"
-            tools:src="@tools:sample/avatars" />
+            android:src="@drawable/dicoding"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ImageContrastCheck" />
 
         <TextView
-            android:id="@+id/text"
+            android:id="@+id/text_view"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_marginTop="@dimen/margin_top"
+            android:alpha="0"
             android:text="@string/app_name"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/image" />
+            app:layout_constraintTop_toBottomOf="@id/image_view" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_email"
@@ -36,9 +39,10 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="@dimen/margin_top"
+            android:alpha="0"
             android:hint="@string/email"
             app:endIconMode="clear_text"
-            app:layout_constraintTop_toBottomOf="@id/text"
+            app:layout_constraintTop_toBottomOf="@id/text_view"
             app:startIconDrawable="@drawable/ic_baseline_email_24">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -56,6 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="@dimen/margin_top"
+            android:alpha="0"
             android:hint="@string/password"
             app:endIconMode="password_toggle"
             app:layout_constraintTop_toBottomOf="@id/til_email"
@@ -74,6 +79,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="@dimen/margin_top"
+            android:alpha="0"
             android:text="@string/sign_in"
             app:layout_constraintTop_toBottomOf="@id/til_password"
             tools:ignore="TextContrastCheck" />
@@ -84,6 +90,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_marginTop="@dimen/margin_top"
+            android:alpha="0"
             android:text="@string/sign_in_to_sign_up"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"

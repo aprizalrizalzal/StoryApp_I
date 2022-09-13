@@ -1,9 +1,12 @@
 package me.zal.rizal.aprizal.storyapp.main.auth
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
@@ -12,11 +15,11 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModelProvider
 import me.zal.rizal.aprizal.storyapp.R
 import me.zal.rizal.aprizal.storyapp.databinding.ActivitySignInBinding
-import me.zal.rizal.aprizal.storyapp.main.MainActivity
+import me.zal.rizal.aprizal.storyapp.main.StoryActivity
+import me.zal.rizal.aprizal.storyapp.main.UsersPreference
+import me.zal.rizal.aprizal.storyapp.model.LoginResult
 import me.zal.rizal.aprizal.storyapp.model.SignInModel
 import me.zal.rizal.aprizal.storyapp.model.SignInResponse
-import me.zal.rizal.aprizal.storyapp.model.LoginResult
-import me.zal.rizal.aprizal.storyapp.main.UsersPreference
 import me.zal.rizal.aprizal.storyapp.retrofit.ApiConfig
 import me.zal.rizal.aprizal.storyapp.view.ViewModelFactory
 import me.zal.rizal.aprizal.storyapp.view.model.SignInViewModel
@@ -43,7 +46,7 @@ class SignInActivity : AppCompatActivity() {
         binding = ActivitySignInBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-//        playAnimation()
+        playAnimation()
 
         binding.btnSignIn.setOnClickListener {
             email = binding.tietEmail.text.toString()
@@ -57,6 +60,29 @@ class SignInActivity : AppCompatActivity() {
             val intent = Intent(applicationContext, SignUpActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
+        }
+    }
+
+    private fun playAnimation() {
+        ObjectAnimator.ofFloat(binding.imageView, View.TRANSLATION_X, -32f, 32f).apply {
+            duration = 6000
+            repeatCount = ObjectAnimator.INFINITE
+            repeatMode = ObjectAnimator.REVERSE
+        }.start()
+
+        val text = ObjectAnimator.ofFloat(binding.textView, View.ALPHA, 1f).setDuration(500)
+        val email = ObjectAnimator.ofFloat(binding.tilEmail, View.ALPHA, 1f).setDuration(500)
+        val password = ObjectAnimator.ofFloat(binding.tilPassword, View.ALPHA, 1f).setDuration(500)
+        val signIn = ObjectAnimator.ofFloat(binding.btnSignIn, View.ALPHA, 1f).setDuration(500)
+        val signUp = ObjectAnimator.ofFloat(binding.tvSignInToSignUp, View.ALPHA, 1f).setDuration(500)
+
+        val together = AnimatorSet().apply {
+            playTogether(signIn, signUp)
+        }
+
+        AnimatorSet().apply {
+            playSequentially(text, email, password, together)
+            start()
         }
     }
 
@@ -116,6 +142,8 @@ class SignInActivity : AppCompatActivity() {
             ViewModelFactory(UsersPreference.getInstance(dataStore))
         )[SignInViewModel::class.java]
 
+        signInViewModel.signIn()
+
         signInViewModel.saveSignIn(
             LoginResult(
                 loginResult.userId,
@@ -123,9 +151,7 @@ class SignInActivity : AppCompatActivity() {
                 loginResult.token
             )
         )
-        signInViewModel.signIn()
-
-        val intent = Intent(applicationContext, MainActivity::class.java)
+        val intent = Intent(applicationContext, StoryActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
         finish()

@@ -19,6 +19,15 @@ class ListStoryAdapter(private val listStoryItem: ArrayList<ListStoryItem>) :
         var imgCardStory: ImageView = itemView.findViewById(R.id.img_card_story)
         var tvName: TextView = itemView.findViewById(R.id.tv_name)
         var tvDescription: TextView = itemView.findViewById(R.id.tv_description)
+
+        fun bind(listStoryItem: ListStoryItem) {
+            Glide.with(itemView.context)
+                .load(listStoryItem.photoUrl)
+                .apply(RequestOptions().override(512, 512))
+                .into(imgCardStory)
+            tvName.text = listStoryItem.name
+            tvDescription.text = listStoryItem.description
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -35,13 +44,7 @@ class ListStoryAdapter(private val listStoryItem: ArrayList<ListStoryItem>) :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val storyItem = listStoryItem[position]
-        Glide.with(holder.itemView.context)
-            .load(storyItem.photoUrl)
-            .apply(RequestOptions().override(512, 512))
-            .into(holder.imgCardStory)
-        holder.tvName.text = storyItem.name
-        holder.tvDescription.text = storyItem.description
+        holder.bind(listStoryItem[position])
     }
 
     override fun getItemCount(): Int {

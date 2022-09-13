@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import me.zal.rizal.aprizal.storyapp.main.MainActivity
+import me.zal.rizal.aprizal.storyapp.main.StoryActivity
 
 @SuppressLint("CustomSplashScreen")
 class SplashScreenActivity : AppCompatActivity() {
@@ -19,7 +19,8 @@ class SplashScreenActivity : AppCompatActivity() {
             } catch (e: InterruptedException) {
                 e.printStackTrace()
             } finally {
-                startActivity(Intent(applicationContext, MainActivity::class.java))
+                startActivity(Intent(applicationContext, StoryActivity::class.java))
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                 finish()
             }
         }

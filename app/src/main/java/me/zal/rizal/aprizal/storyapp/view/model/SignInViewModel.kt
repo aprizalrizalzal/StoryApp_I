@@ -7,6 +7,7 @@ import me.zal.rizal.aprizal.storyapp.model.LoginResult
 import me.zal.rizal.aprizal.storyapp.main.UsersPreference
 
 class SignInViewModel(private val pref: UsersPreference) : ViewModel() {
+
     fun saveSignIn(loginResult: LoginResult) {
         viewModelScope.launch {
             pref.saveSignIn(loginResult)

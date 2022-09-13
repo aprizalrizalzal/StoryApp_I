@@ -3,7 +3,6 @@ package me.zal.rizal.aprizal.storyapp.retrofit
 import me.zal.rizal.aprizal.storyapp.model.SignInModel
 import me.zal.rizal.aprizal.storyapp.model.SignInResponse
 import me.zal.rizal.aprizal.storyapp.model.SignUpModel
-import me.zal.rizal.aprizal.storyapp.model.story.ListStoryItem
 import me.zal.rizal.aprizal.storyapp.model.story.StoriesModel
 import me.zal.rizal.aprizal.storyapp.model.story.StoriesResponse
 import okhttp3.MultipartBody
