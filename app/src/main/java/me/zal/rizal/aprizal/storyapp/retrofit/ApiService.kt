@@ -1,17 +1,37 @@
 package me.zal.rizal.aprizal.storyapp.retrofit
 
-import me.zal.rizal.aprizal.storyapp.model.Login
-import me.zal.rizal.aprizal.storyapp.model.LoginResponse
-import me.zal.rizal.aprizal.storyapp.model.Register
+import me.zal.rizal.aprizal.storyapp.model.SignInModel
+import me.zal.rizal.aprizal.storyapp.model.SignInResponse
+import me.zal.rizal.aprizal.storyapp.model.SignUpModel
+import me.zal.rizal.aprizal.storyapp.model.story.ListStoryItem
+import me.zal.rizal.aprizal.storyapp.model.story.StoriesModel
+import me.zal.rizal.aprizal.storyapp.model.story.StoriesResponse
+import okhttp3.MultipartBody
 import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.POST
+import retrofit2.http.*
 
 
 interface ApiService {
     @POST("register")
-    fun register(@Body register: Register?): Call<Register?>?
+    fun register(
+        @Body signUpModel: SignUpModel?
+    ): Call<SignUpModel?>?
 
     @POST("login")
-    fun login(@Body login: Login?): Call<LoginResponse?>?
+    fun login(
+        @Body signInModel: SignInModel?
+    ): Call<SignInResponse?>?
+
+    @Multipart
+    @POST("stories")
+    fun addNewStory(
+        @Header("Authorization") token: String,
+        @Part file: MultipartBody.Part,
+        @Body storiesModel: StoriesModel?
+    ): Call<StoriesModel?>?
+
+    @GET("stories")
+    fun getAllStories(
+        @Header("Authorization") token: String,
+    ): Call<StoriesResponse?>?
 }

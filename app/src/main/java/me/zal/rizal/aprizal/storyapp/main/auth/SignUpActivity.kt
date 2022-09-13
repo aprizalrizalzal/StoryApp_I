@@ -11,7 +11,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModelProvider
 import me.zal.rizal.aprizal.storyapp.R
 import me.zal.rizal.aprizal.storyapp.databinding.ActivitySignUpBinding
-import me.zal.rizal.aprizal.storyapp.model.Register
+import me.zal.rizal.aprizal.storyapp.model.SignUpModel
 import me.zal.rizal.aprizal.storyapp.model.users.UserModel
 import me.zal.rizal.aprizal.storyapp.main.UsersPreference
 import me.zal.rizal.aprizal.storyapp.retrofit.ApiConfig
@@ -41,7 +41,7 @@ class SignUpActivity : AppCompatActivity() {
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupViewModel()
+//        playAnimation()
 
         binding.btnSignUp.setOnClickListener {
             name = binding.tietName.text.toString()
@@ -54,16 +54,10 @@ class SignUpActivity : AppCompatActivity() {
 
         binding.tvSignUpToSignIn.setOnClickListener {
             val intent = Intent(applicationContext, SignInActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
             finish()
         }
-    }
-
-    private fun setupViewModel() {
-        signupViewModel = ViewModelProvider(
-            this,
-            ViewModelFactory(UsersPreference.getInstance(dataStore))
-        )[SignupViewModel::class.java]
     }
 
     private fun isEmptyField(): Boolean {
@@ -93,29 +87,38 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun sigUpUser() {
-        val client = ApiConfig.getApiService().register(Register(name, email, password))
-        client?.enqueue(object : Callback<Register?> {
+        val client = ApiConfig.getApiService().register(SignUpModel(name, email, password))
+        client?.enqueue(object : Callback<SignUpModel?> {
             override fun onResponse(
-                call: Call<Register?>,
-                response: Response<Register?>
+                call: Call<SignUpModel?>,
+                response: Response<SignUpModel?>
             ) {
                 if (response.isSuccessful) {
                     Log.d(TAG, "onResponse: ${response.message()}")
-                    signupViewModel.saveSignUp(
-                        UserModel(false, email, password, name, "", "")
-                    )
-
-                    val intent = Intent(applicationContext, SignInActivity::class.java)
-                    startActivity(intent)
-                    finish()
+                    setupViewModel()
                 } else {
                     Log.e(TAG, "onFailure: ${response.message()}")
                 }
             }
 
-            override fun onFailure(call: Call<Register?>, t: Throwable) {
+            override fun onFailure(call: Call<SignUpModel?>, t: Throwable) {
                 Log.e(TAG, "onFailure: ${t.message}")
             }
         })
+    }
+
+    private fun setupViewModel() {
+        signupViewModel = ViewModelProvider(
+            this,
+            ViewModelFactory(UsersPreference.getInstance(dataStore))
+        )[SignupViewModel::class.java]
+
+        signupViewModel.saveSignUp(
+            UserModel(false, email, password, name, "", "")
+        )
+
+        val intent = Intent(applicationContext, SignInActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 }

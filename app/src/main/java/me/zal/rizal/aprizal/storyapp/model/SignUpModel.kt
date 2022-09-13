@@ -2,7 +2,7 @@ package me.zal.rizal.aprizal.storyapp.model
 
 import com.google.gson.annotations.SerializedName
 
-data class Register(
+data class SignUpModel(
 
     @field:SerializedName("name")
     val name: String,

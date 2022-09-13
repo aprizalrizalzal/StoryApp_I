@@ -2,7 +2,7 @@ package me.zal.rizal.aprizal.storyapp.model
 
 import com.google.gson.annotations.SerializedName
 
-data class Login(
+data class SignInModel(
 
     @field:SerializedName("email")
     val email: String,
@@ -12,7 +12,7 @@ data class Login(
 
 )
 
-data class LoginResponse(
+data class SignInResponse(
 
     @field:SerializedName("loginResult")
     val loginResult: LoginResult,

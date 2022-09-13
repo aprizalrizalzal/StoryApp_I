@@ -13,8 +13,8 @@ import androidx.lifecycle.ViewModelProvider
 import me.zal.rizal.aprizal.storyapp.R
 import me.zal.rizal.aprizal.storyapp.databinding.ActivitySignInBinding
 import me.zal.rizal.aprizal.storyapp.main.MainActivity
-import me.zal.rizal.aprizal.storyapp.model.Login
-import me.zal.rizal.aprizal.storyapp.model.LoginResponse
+import me.zal.rizal.aprizal.storyapp.model.SignInModel
+import me.zal.rizal.aprizal.storyapp.model.SignInResponse
 import me.zal.rizal.aprizal.storyapp.model.LoginResult
 import me.zal.rizal.aprizal.storyapp.main.UsersPreference
 import me.zal.rizal.aprizal.storyapp.retrofit.ApiConfig
@@ -43,7 +43,7 @@ class SignInActivity : AppCompatActivity() {
         binding = ActivitySignInBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupViewModel()
+//        playAnimation()
 
         binding.btnSignIn.setOnClickListener {
             email = binding.tietEmail.text.toString()
@@ -55,6 +55,7 @@ class SignInActivity : AppCompatActivity() {
 
         binding.tvSignInToSignUp.setOnClickListener {
             val intent = Intent(applicationContext, SignUpActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
         }
     }
@@ -79,29 +80,18 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun sigInUser() {
-        val client = ApiConfig.getApiService().login(Login(email, password))
-        client?.enqueue(object : Callback<LoginResponse?> {
+        val client = ApiConfig.getApiService().login(SignInModel(email, password))
+        client?.enqueue(object : Callback<SignInResponse?> {
             override fun onResponse(
-                call: Call<LoginResponse?>,
-                response: Response<LoginResponse?>
+                call: Call<SignInResponse?>,
+                response: Response<SignInResponse?>
             ) {
                 if (response.isSuccessful) {
                     Log.d(TAG, "onResponse: ${response.message()}")
                     val responseBody = response.body()
                     if (responseBody != null) {
                         val loginResult = responseBody.loginResult
-                        signInViewModel.saveSignIn(
-                            LoginResult(
-                                loginResult.userId,
-                                loginResult.name,
-                                loginResult.token
-                            )
-                        )
-                        signInViewModel.signIn()
-
-                        val intent = Intent(applicationContext, MainActivity::class.java)
-                        startActivity(intent)
-                        finish()
+                        setupViewModel(loginResult)
                     } else {
                         Toast.makeText(
                             applicationContext,
@@ -114,16 +104,30 @@ class SignInActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<LoginResponse?>, t: Throwable) {
+            override fun onFailure(call: Call<SignInResponse?>, t: Throwable) {
                 Log.e(TAG, "onFailure: ${t.message}")
             }
         })
     }
 
-    private fun setupViewModel() {
+    private fun setupViewModel(loginResult: LoginResult) {
         signInViewModel = ViewModelProvider(
             this,
             ViewModelFactory(UsersPreference.getInstance(dataStore))
         )[SignInViewModel::class.java]
+
+        signInViewModel.saveSignIn(
+            LoginResult(
+                loginResult.userId,
+                loginResult.name,
+                loginResult.token
+            )
+        )
+        signInViewModel.signIn()
+
+        val intent = Intent(applicationContext, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+        finish()
     }
 }
