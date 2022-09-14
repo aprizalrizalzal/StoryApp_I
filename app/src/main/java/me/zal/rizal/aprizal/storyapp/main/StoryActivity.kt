@@ -73,18 +73,19 @@ class StoryActivity : AppCompatActivity() {
         )[StoryViewModel::class.java]
 
         storyViewModel.getUser().observe(this) { user ->
-            if (!user.isLogin && user.token.isEmpty()) {
-                Log.w(TAG, "login: " + user.isLogin)
-                Log.w(TAG, "setupViewModel: " + user.token)
-                val intent = Intent(applicationContext, SignInActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(intent)
-                finish()
-            } else {
-                Log.d(TAG, "login: " + user.isLogin)
-                Log.d(TAG, "setupViewModel: " + user.token)
-                val token = user.token
-                setStories(token)
+            when {
+                user.isLogin && user.token.isNotEmpty() -> {
+                    Log.d(TAG, "login: " + user.isLogin +" and token: "+ user.token)
+                    val token = user.token
+                    setStories(token)
+                }
+                else -> {
+                    Log.w(TAG, "login: " + user.isLogin +" and token: "+ user.token)
+                    val intent = Intent(applicationContext, SignInActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(intent)
+                    finish()
+                }
             }
         }
     }

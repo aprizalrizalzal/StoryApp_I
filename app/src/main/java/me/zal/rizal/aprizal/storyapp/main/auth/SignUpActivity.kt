@@ -5,7 +5,6 @@ import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
@@ -14,15 +13,9 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModelProvider
 import me.zal.rizal.aprizal.storyapp.R
 import me.zal.rizal.aprizal.storyapp.databinding.ActivitySignUpBinding
-import me.zal.rizal.aprizal.storyapp.model.SignUpModel
-import me.zal.rizal.aprizal.storyapp.model.users.UserModel
 import me.zal.rizal.aprizal.storyapp.main.UsersPreference
-import me.zal.rizal.aprizal.storyapp.retrofit.ApiConfig
 import me.zal.rizal.aprizal.storyapp.view.ViewModelFactory
 import me.zal.rizal.aprizal.storyapp.view.model.SignupViewModel
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
@@ -34,10 +27,6 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var password: String
     private var validateField: Boolean = false
     private lateinit var signupViewModel: SignupViewModel
-
-    companion object {
-        private const val TAG = "SignUpActivity"
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,7 +64,8 @@ class SignUpActivity : AppCompatActivity() {
         val email = ObjectAnimator.ofFloat(binding.tilEmail, View.ALPHA, 1f).setDuration(500)
         val password = ObjectAnimator.ofFloat(binding.tilPassword, View.ALPHA, 1f).setDuration(500)
         val signUp = ObjectAnimator.ofFloat(binding.btnSignUp, View.ALPHA, 1f).setDuration(500)
-        val signIn = ObjectAnimator.ofFloat(binding.tvSignUpToSignIn, View.ALPHA, 1f).setDuration(500)
+        val signIn =
+            ObjectAnimator.ofFloat(binding.tvSignUpToSignIn, View.ALPHA, 1f).setDuration(500)
 
         val together = AnimatorSet().apply {
             playTogether(signIn, signUp)
@@ -109,29 +99,8 @@ class SignUpActivity : AppCompatActivity() {
             binding.tilPassword.isErrorEnabled = false
         }
 
-        sigUpUser()
+        setupViewModel()
         return true
-    }
-
-    private fun sigUpUser() {
-        val client = ApiConfig.getApiService().register(SignUpModel(name, email, password))
-        client?.enqueue(object : Callback<SignUpModel?> {
-            override fun onResponse(
-                call: Call<SignUpModel?>,
-                response: Response<SignUpModel?>
-            ) {
-                if (response.isSuccessful) {
-                    Log.d(TAG, "onResponse: ${response.message()}")
-                    setupViewModel()
-                } else {
-                    Log.e(TAG, "onFailure: ${response.message()}")
-                }
-            }
-
-            override fun onFailure(call: Call<SignUpModel?>, t: Throwable) {
-                Log.e(TAG, "onFailure: ${t.message}")
-            }
-        })
     }
 
     private fun setupViewModel() {
@@ -140,12 +109,13 @@ class SignUpActivity : AppCompatActivity() {
             ViewModelFactory(UsersPreference.getInstance(dataStore))
         )[SignupViewModel::class.java]
 
-        signupViewModel.saveSignUp(
-            UserModel(false, email, password, name, "", "")
-        )
-
-        val intent = Intent(applicationContext, SignInActivity::class.java)
-        startActivity(intent)
-        finish()
+        signupViewModel.signUp(name, email, password)
+        signupViewModel.getSignUpModel().observe(this) { signUp ->
+            if (signUp != null) {
+                val intent = Intent(applicationContext, SignInActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+        }
     }
 }

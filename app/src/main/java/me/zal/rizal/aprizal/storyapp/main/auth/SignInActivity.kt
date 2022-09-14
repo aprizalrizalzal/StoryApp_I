@@ -5,9 +5,7 @@ import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -17,15 +15,9 @@ import me.zal.rizal.aprizal.storyapp.R
 import me.zal.rizal.aprizal.storyapp.databinding.ActivitySignInBinding
 import me.zal.rizal.aprizal.storyapp.main.StoryActivity
 import me.zal.rizal.aprizal.storyapp.main.UsersPreference
-import me.zal.rizal.aprizal.storyapp.model.LoginResult
-import me.zal.rizal.aprizal.storyapp.model.SignInModel
-import me.zal.rizal.aprizal.storyapp.model.SignInResponse
-import me.zal.rizal.aprizal.storyapp.retrofit.ApiConfig
+import me.zal.rizal.aprizal.storyapp.model.users.UserModel
 import me.zal.rizal.aprizal.storyapp.view.ViewModelFactory
 import me.zal.rizal.aprizal.storyapp.view.model.SignInViewModel
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
@@ -36,10 +28,6 @@ class SignInActivity : AppCompatActivity() {
     private lateinit var password: String
     private var validateField: Boolean = false
     private lateinit var signInViewModel: SignInViewModel
-
-    companion object {
-        private const val TAG = "SignInActivity"
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,7 +62,8 @@ class SignInActivity : AppCompatActivity() {
         val email = ObjectAnimator.ofFloat(binding.tilEmail, View.ALPHA, 1f).setDuration(500)
         val password = ObjectAnimator.ofFloat(binding.tilPassword, View.ALPHA, 1f).setDuration(500)
         val signIn = ObjectAnimator.ofFloat(binding.btnSignIn, View.ALPHA, 1f).setDuration(500)
-        val signUp = ObjectAnimator.ofFloat(binding.tvSignInToSignUp, View.ALPHA, 1f).setDuration(500)
+        val signUp =
+            ObjectAnimator.ofFloat(binding.tvSignInToSignUp, View.ALPHA, 1f).setDuration(500)
 
         val together = AnimatorSet().apply {
             playTogether(signIn, signUp)
@@ -101,59 +90,37 @@ class SignInActivity : AppCompatActivity() {
             binding.tilPassword.isErrorEnabled = false
         }
 
-        sigInUser()
+        setupSignInViewModel()
         return true
     }
 
-    private fun sigInUser() {
-        val client = ApiConfig.getApiService().login(SignInModel(email, password))
-        client?.enqueue(object : Callback<SignInResponse?> {
-            override fun onResponse(
-                call: Call<SignInResponse?>,
-                response: Response<SignInResponse?>
-            ) {
-                if (response.isSuccessful) {
-                    Log.d(TAG, "onResponse: ${response.message()}")
-                    val responseBody = response.body()
-                    if (responseBody != null) {
-                        val loginResult = responseBody.loginResult
-                        setupViewModel(loginResult)
-                    } else {
-                        Toast.makeText(
-                            applicationContext,
-                            getString(R.string.failed),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                } else {
-                    Log.e(TAG, "onFailure: ${response.message()}")
-                }
-            }
-
-            override fun onFailure(call: Call<SignInResponse?>, t: Throwable) {
-                Log.e(TAG, "onFailure: ${t.message}")
-            }
-        })
-    }
-
-    private fun setupViewModel(loginResult: LoginResult) {
+    private fun setupSignInViewModel() {
         signInViewModel = ViewModelProvider(
             this,
             ViewModelFactory(UsersPreference.getInstance(dataStore))
         )[SignInViewModel::class.java]
 
-        signInViewModel.signIn()
+        signInViewModel.signIn(email, password)
+        signInViewModel.getSignInResponse().observe(this) { signInResponse ->
+            if (signInResponse != null) {
+                val intent = Intent(applicationContext, StoryActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
+                finish()
+            }
+        }
 
-        signInViewModel.saveSignIn(
-            LoginResult(
-                loginResult.userId,
-                loginResult.name,
-                loginResult.token
-            )
-        )
-        val intent = Intent(applicationContext, StoryActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(intent)
-        finish()
+        signInViewModel.getLoginResult().observe(this) { loginResult ->
+            if (loginResult != null) {
+                signInViewModel.saveSignIn(
+                    UserModel(
+                        true,
+                        loginResult.name,
+                        loginResult.token,
+                        loginResult.userId
+                    )
+                )
+            }
+        }
     }
 }
