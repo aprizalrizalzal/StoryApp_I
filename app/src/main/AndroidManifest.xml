@@ -30,7 +30,7 @@
             android:exported="false"
             android:label="@string/add_new_story" />
         <activity
-            android:name=".main.StoryActivity"
+            android:name=".main.StoriesActivity"
             android:exported="false" />
         <activity
             android:name=".main.auth.SignUpActivity"

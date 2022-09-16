@@ -41,12 +41,18 @@ class SignupViewModel : ViewModel() {
                 response: Response<SignUpResponse?>
             ) {
                 if (response.isSuccessful) {
-                    Log.d(TAG, "onBody: ${response.message()}")
+                    Log.d(TAG, "onResponse: ${response.message()}")
                     isProgress.value = false
                     signUpResponse.value = response.body()
-                    isToast.value = response.body()?.message
+                    val body = response.body()
+                    if (body != null && !body.error) {
+                        Log.d(TAG, "onBody: ")
+                        isToast.value = body.message
+                    } else {
+                        Log.w(TAG, "onBody: ${response.message()}")
+                    }
                 } else {
-                    Log.w(TAG, "onBody: ${response.message()}")
+                    Log.w(TAG, "onResponse: ${response.message()}")
                     isProgress.value = false
                 }
             }

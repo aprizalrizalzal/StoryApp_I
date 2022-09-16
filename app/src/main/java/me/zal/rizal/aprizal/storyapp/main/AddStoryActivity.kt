@@ -1,16 +1,13 @@
 package me.zal.rizal.aprizal.storyapp.main
 
 import android.Manifest
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_GET_CONTENT
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,24 +15,38 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.ViewModelProvider
+import me.zal.rizal.aprizal.storyapp.R
+import me.zal.rizal.aprizal.storyapp.addition.CustomProgressDialog
+import me.zal.rizal.aprizal.storyapp.addition.createCustomTempFile
+import me.zal.rizal.aprizal.storyapp.addition.reduceFileImage
+import me.zal.rizal.aprizal.storyapp.addition.uriToFile
 import me.zal.rizal.aprizal.storyapp.databinding.ActivityAddStoryBinding
+import me.zal.rizal.aprizal.storyapp.view.ViewModelFactory
 import me.zal.rizal.aprizal.storyapp.view.model.AddStoryViewModel
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import java.io.*
-import java.text.SimpleDateFormat
-import java.util.*
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
+
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 class AddStoryActivity : AppCompatActivity() {
 
     private var getFile: File? = null
+    private lateinit var setDescriptions: String
+    private var validateField: Boolean? = false
     private lateinit var addStoryViewModel: AddStoryViewModel
     private lateinit var binding: ActivityAddStoryBinding
+    private lateinit var progressDialog: CustomProgressDialog
     private lateinit var currentPhotoPath: String
 
     companion object {
-        private const val FILENAME_FORMAT = "dd-MMM-yyyy"
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
         private const val REQUEST_CODE_PERMISSIONS = 10
     }
@@ -50,10 +61,10 @@ class AddStoryActivity : AppCompatActivity() {
             if (!allPermissionsGranted()) {
                 Toast.makeText(
                     this,
-                    "Tidak mendapatkan permission.",
+                    getString(R.string.not_getting_permission),
                     Toast.LENGTH_SHORT
                 ).show()
-//                finish()
+                finish()
             }
         }
     }
@@ -75,6 +86,7 @@ class AddStoryActivity : AppCompatActivity() {
             )
         }
 
+        progressDialog = CustomProgressDialog(this)
         binding.btnCamera.setOnClickListener {
             startTakePhoto()
         }
@@ -83,23 +95,43 @@ class AddStoryActivity : AppCompatActivity() {
             startGallery()
         }
 
+
         binding.btnUpload.setOnClickListener {
-            uploadStory()
+            setDescriptions = binding.tietDescription.text.toString()
+            validateField = isEmptyField()
         }
 
-//        playAnimation()
+    }
 
+    private fun isEmptyField(): Boolean {
+        if (getFile == null) {
+            Toast.makeText(
+                applicationContext,
+                getString(R.string.insert_the_image_first),
+                Toast.LENGTH_SHORT
+            ).show()
+            return false
+        } else if (setDescriptions.isEmpty()) {
+            binding.tilDescription.error = getString(R.string.image_description_cannot_be_empty)
+            return false
+        } else {
+            binding.tilDescription.isErrorEnabled = false
+            uploadImage()
+        }
+
+        return true
     }
 
     private val launcherIntentCamera = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (it.resultCode == RESULT_OK) {
-            val myFile = File(currentPhotoPath)
-            getFile = myFile
-            val result = BitmapFactory.decodeFile(myFile.path)
+            val setFile = File(currentPhotoPath)
+            getFile = setFile
 
+            val result = BitmapFactory.decodeFile(setFile.path)
             binding.imgCardStory.setImageBitmap(result)
+
         }
     }
 
@@ -108,8 +140,9 @@ class AddStoryActivity : AppCompatActivity() {
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             val selectedImg: Uri = result.data?.data as Uri
-            val myFile = uriToFile(selectedImg, applicationContext)
-            getFile = myFile
+            val setFile = uriToFile(selectedImg, applicationContext)
+            getFile = setFile
+
             binding.imgCardStory.setImageURI(selectedImg)
         }
     }
@@ -129,26 +162,6 @@ class AddStoryActivity : AppCompatActivity() {
         }
     }
 
-    private fun createCustomTempFile(context: Context): File {
-        val storageDir: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile(timeStamp, ".jpg", storageDir)
-    }
-
-    private fun uriToFile(selectedImg: Uri, context: Context): File {
-        val contentResolver: ContentResolver = context.contentResolver
-        val myFile = createCustomTempFile(context)
-
-        val inputStream = contentResolver.openInputStream(selectedImg) as InputStream
-        val outputStream: OutputStream = FileOutputStream(myFile)
-        val buf = ByteArray(1024)
-        var len: Int
-        while (inputStream.read(buf).also { len = it } > 0) outputStream.write(buf, 0, len)
-        outputStream.close()
-        inputStream.close()
-
-        return myFile
-    }
-
     private fun startGallery() {
         val intent = Intent()
         intent.action = ACTION_GET_CONTENT
@@ -157,41 +170,47 @@ class AddStoryActivity : AppCompatActivity() {
         launcherIntentGallery.launch(chooser)
     }
 
-    private fun uploadStory() {
-        if (getFile != null) {
-            val file = getFile as File
-            val requestImageFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-            val imageMultipart: MultipartBody.Part = MultipartBody.Part.createFormData(
-                "photo",
-                file.name,
-                requestImageFile
+    private fun uploadImage() {
+        val setFile = reduceFileImage(getFile as File)
+
+        val description = setDescriptions.toRequestBody("text/plain".toMediaType())
+        val requestImageFile = setFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
+        val imageMultipart: MultipartBody.Part = MultipartBody.Part.createFormData(
+            "photo",
+            setFile.name,
+            requestImageFile
+        )
+
+        addStoryViewModel = ViewModelProvider(
+            this,
+            ViewModelFactory(UsersPreference.getInstance(dataStore))
+        )[AddStoryViewModel::class.java]
+
+        addStoryViewModel.getIsProgress().observe(this) { showProgress(it) }
+        addStoryViewModel.getUser().observe(this) { users ->
+            val token = users.token
+            addStoryViewModel.setAddStory(
+                " Bearer $token",
+                imageMultipart,
+                description
             )
+        }
+
+        addStoryViewModel.getIsToast().observe(this) { message ->
+            Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+        }
+
+    }
+
+    private fun showProgress(it: Boolean) {
+        if (it) {
+            progressDialog.showProgressDialog()
         } else {
-            Toast.makeText(
-                applicationContext,
-                "Silakan masukkan berkas gambar terlebih dahulu.",
-                Toast.LENGTH_SHORT
-            ).show()
+            progressDialog.runCatching { dismissProgressDialog() }
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(Intent(applicationContext, StoriesActivity::class.java))
+            finish()
         }
     }
 
-    private val timeStamp: String = SimpleDateFormat(
-        FILENAME_FORMAT,
-        Locale.US
-    ).format(System.currentTimeMillis())
-
-    fun reduceFileImage(file: File): File {
-        val bitmap = BitmapFactory.decodeFile(file.path)
-        var compressQuality = 100
-        var streamLength: Int
-        do {
-            val bmpStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, compressQuality, bmpStream)
-            val bmpPicByteArray = bmpStream.toByteArray()
-            streamLength = bmpPicByteArray.size
-            compressQuality -= 5
-        } while (streamLength > 1000000)
-        bitmap.compress(Bitmap.CompressFormat.JPEG, compressQuality, FileOutputStream(file))
-        return file
-    }
 }

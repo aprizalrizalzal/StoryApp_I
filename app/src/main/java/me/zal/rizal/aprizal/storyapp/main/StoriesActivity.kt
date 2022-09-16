@@ -16,37 +16,38 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import me.zal.rizal.aprizal.storyapp.R
-import me.zal.rizal.aprizal.storyapp.adapter.ListStoryAdapter
+import me.zal.rizal.aprizal.storyapp.adapter.ListStoriesAdapter
 import me.zal.rizal.aprizal.storyapp.addition.CustomProgressDialog
-import me.zal.rizal.aprizal.storyapp.databinding.ActivityStoryBinding
+import me.zal.rizal.aprizal.storyapp.databinding.ActivityStoriesBinding
 import me.zal.rizal.aprizal.storyapp.main.auth.SignInActivity
 import me.zal.rizal.aprizal.storyapp.model.story.ListStoryItem
 import me.zal.rizal.aprizal.storyapp.view.ViewModelFactory
-import me.zal.rizal.aprizal.storyapp.view.model.StoryViewModel
+import me.zal.rizal.aprizal.storyapp.view.model.StoriesViewModel
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
-class StoryActivity : AppCompatActivity() {
-    private lateinit var storyViewModel: StoryViewModel
+class StoriesActivity : AppCompatActivity() {
+
+    private lateinit var storiesViewModel: StoriesViewModel
     private lateinit var progressDialog: CustomProgressDialog
-    private lateinit var binding: ActivityStoryBinding
-    private lateinit var listStoryAdapter: ListStoryAdapter
+    private lateinit var binding: ActivityStoriesBinding
+    private lateinit var listStoriesAdapter: ListStoriesAdapter
 
     companion object {
-        private const val TAG = "StoryActivity"
+        private const val TAG = "StoriesActivity"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityStoryBinding.inflate(layoutInflater)
+        binding = ActivityStoriesBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setupViewModel()
         progressDialog = CustomProgressDialog(this)
 
         binding.fab.setOnClickListener {
-            val intent = Intent(applicationContext, AddStoryActivity::class.java)
-            startActivity(intent)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(Intent(applicationContext, AddStoryActivity::class.java))
         }
     }
 
@@ -57,30 +58,28 @@ class StoryActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_language) {
-            val intent = Intent(Settings.ACTION_LOCALE_SETTINGS)
-            startActivity(intent)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(Intent(Settings.ACTION_LOCALE_SETTINGS))
         }
 
         if (item.itemId == R.id.action_sign_out) {
-            storyViewModel.signOut()
+            storiesViewModel.signOut()
 
-            val intent = Intent(applicationContext, SignInActivity::class.java)
-            startActivity(intent)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(Intent(applicationContext, SignInActivity::class.java))
             finish()
         }
         return true
     }
 
     private fun setupViewModel() {
-        storyViewModel = ViewModelProvider(
+        storiesViewModel = ViewModelProvider(
             this,
             ViewModelFactory(UsersPreference.getInstance(dataStore))
-        )[StoryViewModel::class.java]
+        )[StoriesViewModel::class.java]
 
-        storyViewModel.getIsProgress().observe(this) {
-            showProgress(it)
-        }
-        storyViewModel.getUser().observe(this) { user ->
+        storiesViewModel.getIsProgress().observe(this) { showProgress(it) }
+        storiesViewModel.getUser().observe(this) { user ->
             when {
                 user.isLogin && user.token.isNotEmpty() -> {
                     Log.d(TAG, "login: " + user.isLogin + " and token: " + user.token)
@@ -89,8 +88,8 @@ class StoryActivity : AppCompatActivity() {
                 }
                 else -> {
                     Log.w(TAG, "login: " + user.isLogin + " and token: " + user.token)
-                    val intent = Intent(applicationContext, SignInActivity::class.java)
-                    startActivity(intent)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(Intent(applicationContext, SignInActivity::class.java))
                     finish()
                 }
             }
@@ -98,31 +97,31 @@ class StoryActivity : AppCompatActivity() {
     }
 
     private fun setStories(token: String?) {
-        storyViewModel.setStories("Bearer $token")
-        storyViewModel.getStories().observe(
+        storiesViewModel.setAllStories("Bearer $token")
+        storiesViewModel.getAllStories().observe(
             this
         ) { listStoryItem ->
             if (listStoryItem != null) {
-                listStoryAdapter = ListStoryAdapter(ArrayList(listStoryItem))
+                listStoriesAdapter = ListStoriesAdapter(ArrayList(listStoryItem))
                 binding.rvStories.layoutManager = LinearLayoutManager(applicationContext)
-                binding.rvStories.adapter = listStoryAdapter
+                binding.rvStories.adapter = listStoriesAdapter
                 binding.rvStories.hasFixedSize()
-                listStoryAdapter.setStories(listStoryItem)
-                listStoryAdapter.setOnItemClickCallback(object :
-                    ListStoryAdapter.OnItemClickCallback {
+                listStoriesAdapter.setStories(listStoryItem)
+                listStoriesAdapter.setOnItemClickCallback(object :
+                    ListStoriesAdapter.OnItemClickCallback {
                     override fun onItemClicked(
-                        viewHolder: ListStoryAdapter.ViewHolder,
+                        viewHolder: ListStoriesAdapter.ViewHolder,
                         listStoryItem: ListStoryItem
                     ) {
-                        showSelectedStory(viewHolder, listStoryItem)
+                        showSelectedStories(viewHolder, listStoryItem)
                     }
                 })
             }
         }
     }
 
-    private fun showSelectedStory(
-        viewHolder: ListStoryAdapter.ViewHolder,
+    private fun showSelectedStories(
+        viewHolder: ListStoriesAdapter.ViewHolder,
         listStoryItem: ListStoryItem
     ) {
 
@@ -134,9 +133,9 @@ class StoryActivity : AppCompatActivity() {
                 Pair(viewHolder.tvDescription, "description"),
             )
 
-        val intent = Intent(applicationContext, DetailActivity::class.java)
         intent.putExtra("extra_list_story_item", listStoryItem)
-        startActivity(intent, optionsCompat.toBundle())
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(Intent(applicationContext, DetailActivity::class.java), optionsCompat.toBundle())
     }
 
     private fun showProgress(state: Boolean) {

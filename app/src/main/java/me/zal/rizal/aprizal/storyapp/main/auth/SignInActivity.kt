@@ -15,7 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import me.zal.rizal.aprizal.storyapp.R
 import me.zal.rizal.aprizal.storyapp.addition.CustomProgressDialog
 import me.zal.rizal.aprizal.storyapp.databinding.ActivitySignInBinding
-import me.zal.rizal.aprizal.storyapp.main.StoryActivity
+import me.zal.rizal.aprizal.storyapp.main.StoriesActivity
 import me.zal.rizal.aprizal.storyapp.main.UsersPreference
 import me.zal.rizal.aprizal.storyapp.model.users.UserModel
 import me.zal.rizal.aprizal.storyapp.view.ViewModelFactory
@@ -49,8 +49,8 @@ class SignInActivity : AppCompatActivity() {
         }
 
         binding.tvSignInToSignUp.setOnClickListener {
-            val intent = Intent(applicationContext, SignUpActivity::class.java)
-            startActivity(intent)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(Intent(applicationContext, SignUpActivity::class.java))
         }
     }
 
@@ -106,8 +106,8 @@ class SignInActivity : AppCompatActivity() {
         signInViewModel.setSignIn(email, password)
         signInViewModel.getSignInResponse().observe(this) { signInResponse ->
             if (signInResponse != null) {
-                val intent = Intent(applicationContext, StoryActivity::class.java)
-                startActivity(intent)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(Intent(applicationContext, StoriesActivity::class.java))
                 finish()
             }
         }
@@ -126,7 +126,7 @@ class SignInActivity : AppCompatActivity() {
         }
 
         signInViewModel.getIsProgress().observe(this) { showProgress(it) }
-        signInViewModel.getMessage().observe(this) { message ->
+        signInViewModel.getIsToast().observe(this) { message ->
             Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
         }
     }

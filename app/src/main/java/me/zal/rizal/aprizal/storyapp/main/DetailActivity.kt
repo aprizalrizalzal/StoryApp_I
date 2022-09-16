@@ -1,13 +1,11 @@
 package me.zal.rizal.aprizal.storyapp.main
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import me.zal.rizal.aprizal.storyapp.R
 import me.zal.rizal.aprizal.storyapp.databinding.ActivityDetailBinding
-import me.zal.rizal.aprizal.storyapp.databinding.ActivityStoryBinding
 import me.zal.rizal.aprizal.storyapp.model.story.ListStoryItem
 
 class DetailActivity : AppCompatActivity() {
@@ -18,7 +16,6 @@ class DetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         val storyItem = intent.getParcelableExtra<ListStoryItem>("extra_list_story_item")
 
         if (storyItem != null) {
@@ -28,7 +25,7 @@ class DetailActivity : AppCompatActivity() {
                 .into(binding.imgCardStory)
             binding.tvName.text = storyItem.name
             binding.tvDescription.text = storyItem.description
-            Toast.makeText(applicationContext, storyItem.name,Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, storyItem.name, Toast.LENGTH_SHORT).show()
         }
     }
 }

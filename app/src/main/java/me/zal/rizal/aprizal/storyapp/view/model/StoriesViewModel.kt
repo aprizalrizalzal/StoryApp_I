@@ -12,15 +12,15 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class StoryViewModel(private val pref: UsersPreference) : ViewModel() {
+class StoriesViewModel(private val pref: UsersPreference) : ViewModel() {
 
     companion object {
-        private const val TAG = "StoryViewModel"
+        private const val TAG = "StoriesViewModel"
     }
 
-    private val listStory = MutableLiveData<List<ListStoryItem>>()
-    fun getStories(): LiveData<List<ListStoryItem>> {
-        return listStory
+    private val stories = MutableLiveData<List<ListStoryItem>>()
+    fun getAllStories(): LiveData<List<ListStoryItem>> {
+        return stories
     }
 
     private val isProgress = MutableLiveData<Boolean>()
@@ -28,7 +28,7 @@ class StoryViewModel(private val pref: UsersPreference) : ViewModel() {
         return isProgress
     }
 
-    fun setStories(token: String) {
+    fun setAllStories(token: String) {
         isProgress.value = true
         val client = ApiConfig.getApiService().getAllStories(token)
         client?.enqueue(object : Callback<StoriesResponse?> {
@@ -40,10 +40,12 @@ class StoryViewModel(private val pref: UsersPreference) : ViewModel() {
                     Log.d(TAG, "onResponse: ${response.message()}")
                     isProgress.value = false
                     val body = response.body()
-                    if (body != null) {
-                        listStory.value = body.listStory
+                    if (body != null && !body.error) {
+                        Log.d(TAG, "onBody: ${body.message}")
+                        stories.value = body.listStory
+                    } else {
+                        Log.w(TAG, "onBody: ${response.message()}")
                     }
-
                 } else {
                     Log.e(TAG, "onFailure: ${response.message()}")
                     isProgress.value = false

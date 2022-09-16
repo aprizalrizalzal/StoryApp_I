@@ -22,4 +22,7 @@
     <string name="loading">Wait still in process.!</string>
     <string name="detail_story">Detail Story</string>
     <string name="language">Language</string>
+    <string name="insert_the_image_first">Insert the image first.</string>
+    <string name="image_description_cannot_be_empty">Image description cannot be empty</string>
+    <string name="not_getting_permission">Not getting permission.</string>
 </resources>

@@ -22,4 +22,7 @@
     <string name="loading">Tunggu masih dalam proses.!</string>
     <string name="detail_story">Rincian Cerita</string>
     <string name="language">Bahasa</string>
+    <string name="insert_the_image_first">Sisipkan gambar terlebih dahulu.</string>
+    <string name="image_description_cannot_be_empty">Deskripsi gambar tidak boleh kosong</string>
+    <string name="not_getting_permission">Tidak mendapatkan izin.</string>
 </resources>

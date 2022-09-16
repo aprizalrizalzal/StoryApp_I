@@ -37,9 +37,9 @@ class SignInViewModel(private val pref: UsersPreference) : ViewModel() {
         return isProgress
     }
 
-    private val message = MutableLiveData<String>()
-    fun getMessage(): LiveData<String> {
-        return message
+    private val isToast = MutableLiveData<String>()
+    fun getIsToast(): LiveData<String> {
+        return isToast
     }
 
     fun setSignIn(email: String, password: String) {
@@ -56,15 +56,15 @@ class SignInViewModel(private val pref: UsersPreference) : ViewModel() {
                     val body = response.body()
                     signInResponse.value = response.body()
 
-                    if (body != null) {
+                    if (body != null && !body.error) {
                         Log.d(TAG, "onBody: ${response.message()}")
                         loginResult.value = body.loginResult
-                        message.value = body.message
+                        isToast.value = body.message
                     } else {
                         Log.w(TAG, "onBody: ${response.message()}")
                     }
 
-                } else{
+                } else {
                     Log.w(TAG, "onResponse: ${response.message()}")
                     isProgress.value = false
                 }

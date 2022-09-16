@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import me.zal.rizal.aprizal.storyapp.R
 import me.zal.rizal.aprizal.storyapp.addition.CustomProgressDialog
@@ -50,8 +49,8 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         binding.tvSignUpToSignIn.setOnClickListener {
-            val intent = Intent(applicationContext, SignInActivity::class.java)
-            startActivity(intent)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(Intent(applicationContext, SignInActivity::class.java))
             finish()
         }
     }
@@ -116,8 +115,8 @@ class SignUpActivity : AppCompatActivity() {
         signupViewModel.setSignUp(name, email, password)
         signupViewModel.getSignUpModel().observe(this) { signUp ->
             if (signUp != null) {
-                val intent = Intent(applicationContext, SignInActivity::class.java)
-                startActivity(intent)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(Intent(applicationContext, SignInActivity::class.java))
                 finish()
             }
         }
@@ -127,8 +126,8 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
-    private fun showProgress(state: Boolean) {
-        if (state) {
+    private fun showProgress(it: Boolean) {
+        if (it) {
             progressDialog.showProgressDialog()
         } else {
             progressDialog.runCatching { dismissProgressDialog() }

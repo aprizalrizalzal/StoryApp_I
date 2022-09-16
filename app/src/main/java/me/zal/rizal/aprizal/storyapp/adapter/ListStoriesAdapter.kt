@@ -12,8 +12,8 @@ import com.bumptech.glide.request.RequestOptions
 import me.zal.rizal.aprizal.storyapp.R
 import me.zal.rizal.aprizal.storyapp.model.story.ListStoryItem
 
-class ListStoryAdapter(private val listStoryItem: ArrayList<ListStoryItem>) :
-    RecyclerView.Adapter<ListStoryAdapter.ViewHolder>() {
+class ListStoriesAdapter(private val listStoryItem: ArrayList<ListStoryItem>) :
+    RecyclerView.Adapter<ListStoriesAdapter.ViewHolder>() {
 
     private lateinit var onItemClickCallback: OnItemClickCallback
 

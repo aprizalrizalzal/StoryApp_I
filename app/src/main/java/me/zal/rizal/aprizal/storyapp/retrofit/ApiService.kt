@@ -4,9 +4,10 @@ import me.zal.rizal.aprizal.storyapp.model.SignInModel
 import me.zal.rizal.aprizal.storyapp.model.SignInResponse
 import me.zal.rizal.aprizal.storyapp.model.SignUpModel
 import me.zal.rizal.aprizal.storyapp.model.SignUpResponse
-import me.zal.rizal.aprizal.storyapp.model.story.StoriesModel
+import me.zal.rizal.aprizal.storyapp.model.story.AddStoryResponse
 import me.zal.rizal.aprizal.storyapp.model.story.StoriesResponse
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -27,8 +28,8 @@ interface ApiService {
     fun addNewStory(
         @Header("Authorization") token: String,
         @Part file: MultipartBody.Part,
-//        @Body storiesModel: StoriesModel?
-    ): Call<StoriesModel?>?
+        @Part("description") description: RequestBody
+    ): Call<AddStoryResponse?>?
 
     @GET("stories")
     fun getAllStories(
