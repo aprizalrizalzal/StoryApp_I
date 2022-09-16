@@ -14,3 +14,13 @@ data class SignUpModel(
     val password: String
 
 )
+
+data class SignUpResponse(
+
+    @field:SerializedName("error")
+    val error: Boolean,
+
+    @field:SerializedName("message")
+    val message: String
+
+)

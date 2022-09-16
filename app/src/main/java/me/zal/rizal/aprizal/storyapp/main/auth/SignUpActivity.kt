@@ -6,12 +6,15 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import me.zal.rizal.aprizal.storyapp.R
+import me.zal.rizal.aprizal.storyapp.addition.CustomProgressDialog
 import me.zal.rizal.aprizal.storyapp.databinding.ActivitySignUpBinding
 import me.zal.rizal.aprizal.storyapp.main.UsersPreference
 import me.zal.rizal.aprizal.storyapp.view.ViewModelFactory
@@ -22,6 +25,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignUpBinding
+    private lateinit var progressDialog: CustomProgressDialog
     private lateinit var name: String
     private lateinit var email: String
     private lateinit var password: String
@@ -34,6 +38,7 @@ class SignUpActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         playAnimation()
+        progressDialog = CustomProgressDialog(this)
 
         binding.btnSignUp.setOnClickListener {
             name = binding.tietName.text.toString()
@@ -46,7 +51,6 @@ class SignUpActivity : AppCompatActivity() {
 
         binding.tvSignUpToSignIn.setOnClickListener {
             val intent = Intent(applicationContext, SignInActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
             finish()
         }
@@ -109,13 +113,25 @@ class SignUpActivity : AppCompatActivity() {
             ViewModelFactory(UsersPreference.getInstance(dataStore))
         )[SignupViewModel::class.java]
 
-        signupViewModel.signUp(name, email, password)
+        signupViewModel.setSignUp(name, email, password)
         signupViewModel.getSignUpModel().observe(this) { signUp ->
             if (signUp != null) {
                 val intent = Intent(applicationContext, SignInActivity::class.java)
                 startActivity(intent)
                 finish()
             }
+        }
+        signupViewModel.getIsProgress().observe(this) { showProgress(it) }
+        signupViewModel.getIsToast().observe(this) { message ->
+            Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showProgress(state: Boolean) {
+        if (state) {
+            progressDialog.showProgressDialog()
+        } else {
+            progressDialog.dismissProgressDialog()
         }
     }
 }

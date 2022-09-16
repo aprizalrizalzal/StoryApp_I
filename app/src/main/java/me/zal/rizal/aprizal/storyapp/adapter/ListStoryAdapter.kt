@@ -15,6 +15,12 @@ import me.zal.rizal.aprizal.storyapp.model.story.ListStoryItem
 class ListStoryAdapter(private val listStoryItem: ArrayList<ListStoryItem>) :
     RecyclerView.Adapter<ListStoryAdapter.ViewHolder>() {
 
+    private lateinit var onItemClickCallback: OnItemClickCallback
+
+    fun setOnItemClickCallback(onItemClickCallback: OnItemClickCallback) {
+        this.onItemClickCallback = onItemClickCallback
+    }
+
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var imgCardStory: ImageView = itemView.findViewById(R.id.img_card_story)
         var tvName: TextView = itemView.findViewById(R.id.tv_name)
@@ -45,10 +51,15 @@ class ListStoryAdapter(private val listStoryItem: ArrayList<ListStoryItem>) :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(listStoryItem[position])
+        holder.itemView.setOnClickListener { onItemClickCallback.onItemClicked(listStoryItem[holder.adapterPosition]) }
     }
 
     override fun getItemCount(): Int {
         return listStoryItem.size
+    }
+
+    interface OnItemClickCallback {
+        fun onItemClicked(listStoryItem: ListStoryItem)
     }
 
 }

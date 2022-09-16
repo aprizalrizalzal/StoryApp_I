@@ -19,4 +19,6 @@
     <string name="gallery">Gallery</string>
     <string name="description">Description</string>
     <string name="upload">Upload</string>
+    <string name="loading">Wait still in process.!</string>
+    <string name="detail_story">Detail Story</string>
 </resources>

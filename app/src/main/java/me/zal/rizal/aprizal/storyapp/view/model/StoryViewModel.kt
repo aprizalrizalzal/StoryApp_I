@@ -18,17 +18,18 @@ class StoryViewModel(private val pref: UsersPreference) : ViewModel() {
         private const val TAG = "StoryViewModel"
     }
 
-    fun getUser(): LiveData<UserModel> {
-        return pref.getUser().asLiveData()
-    }
-
     private val listStory = MutableLiveData<List<ListStoryItem>>()
-
-    fun getStories(): MutableLiveData<List<ListStoryItem>> {
+    fun getStories(): LiveData<List<ListStoryItem>> {
         return listStory
     }
 
-    fun stories(token: String) {
+    private val isProgress = MutableLiveData<Boolean>()
+    fun getIsProgress(): LiveData<Boolean> {
+        return isProgress
+    }
+
+    fun setStories(token: String) {
+        isProgress.value = true
         val client = ApiConfig.getApiService().getAllStories(token)
         client?.enqueue(object : Callback<StoriesResponse?> {
             override fun onResponse(
@@ -37,19 +38,27 @@ class StoryViewModel(private val pref: UsersPreference) : ViewModel() {
             ) {
                 if (response.isSuccessful) {
                     Log.d(TAG, "onResponse: ${response.message()}")
-                    if (response.body() != null) {
-                        listStory.value = response.body()!!.listStory
+                    isProgress.value = false
+                    val body = response.body()
+                    if (body != null) {
+                        listStory.value = body.listStory
                     }
 
                 } else {
                     Log.e(TAG, "onFailure: ${response.message()}")
+                    isProgress.value = false
                 }
             }
 
             override fun onFailure(call: Call<StoriesResponse?>, t: Throwable) {
                 Log.e(TAG, "onFailure: ${t.message}")
+                isProgress.value = false
             }
         })
+    }
+
+    fun getUser(): LiveData<UserModel> {
+        return pref.getUser().asLiveData()
     }
 
     fun signOut() {

@@ -16,7 +16,7 @@ class ViewModelFactory(private val pref: UsersPreference) : ViewModelProvider.Ne
                 StoryViewModel(pref) as T
             }
             modelClass.isAssignableFrom(SignupViewModel::class.java) -> {
-                SignupViewModel(pref) as T
+                SignupViewModel() as T
             }
             modelClass.isAssignableFrom(SignInViewModel::class.java) -> {
                 SignInViewModel(pref) as T

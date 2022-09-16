@@ -9,7 +9,6 @@ data class SignInModel(
 
     @field:SerializedName("password")
     val password: String
-
 )
 
 data class SignInResponse(

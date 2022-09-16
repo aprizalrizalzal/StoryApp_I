@@ -14,8 +14,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import me.zal.rizal.aprizal.storyapp.R
 import me.zal.rizal.aprizal.storyapp.adapter.ListStoryAdapter
+import me.zal.rizal.aprizal.storyapp.addition.CustomProgressDialog
 import me.zal.rizal.aprizal.storyapp.databinding.ActivityStoryBinding
 import me.zal.rizal.aprizal.storyapp.main.auth.SignInActivity
+import me.zal.rizal.aprizal.storyapp.model.story.ListStoryItem
 import me.zal.rizal.aprizal.storyapp.view.ViewModelFactory
 import me.zal.rizal.aprizal.storyapp.view.model.StoryViewModel
 
@@ -23,6 +25,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 class StoryActivity : AppCompatActivity() {
     private lateinit var storyViewModel: StoryViewModel
+    private lateinit var progressDialog: CustomProgressDialog
     private lateinit var binding: ActivityStoryBinding
     private lateinit var listStoryAdapter: ListStoryAdapter
 
@@ -36,12 +39,7 @@ class StoryActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupViewModel()
-//        playAnimation()
-
-        binding.refreshLayout.setOnRefreshListener {
-            setupViewModel()
-            binding.refreshLayout.isRefreshing = false
-        }
+        progressDialog = CustomProgressDialog(this)
 
         binding.fab.setOnClickListener {
             val intent = Intent(applicationContext, AddStoryActivity::class.java)
@@ -59,7 +57,6 @@ class StoryActivity : AppCompatActivity() {
             storyViewModel.signOut()
 
             val intent = Intent(applicationContext, SignInActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
             finish()
         }
@@ -72,17 +69,17 @@ class StoryActivity : AppCompatActivity() {
             ViewModelFactory(UsersPreference.getInstance(dataStore))
         )[StoryViewModel::class.java]
 
+        storyViewModel.getIsProgress().observe(this) { showProgress(it) }
         storyViewModel.getUser().observe(this) { user ->
             when {
                 user.isLogin && user.token.isNotEmpty() -> {
-                    Log.d(TAG, "login: " + user.isLogin +" and token: "+ user.token)
+                    Log.d(TAG, "login: " + user.isLogin + " and token: " + user.token)
                     val token = user.token
                     setStories(token)
                 }
                 else -> {
-                    Log.w(TAG, "login: " + user.isLogin +" and token: "+ user.token)
+                    Log.w(TAG, "login: " + user.isLogin + " and token: " + user.token)
                     val intent = Intent(applicationContext, SignInActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                     startActivity(intent)
                     finish()
                 }
@@ -91,7 +88,7 @@ class StoryActivity : AppCompatActivity() {
     }
 
     private fun setStories(token: String?) {
-        storyViewModel.stories("Bearer $token")
+        storyViewModel.setStories("Bearer $token")
         storyViewModel.getStories().observe(
             this
         ) { listStoryItem ->
@@ -101,7 +98,25 @@ class StoryActivity : AppCompatActivity() {
                 binding.rvStories.adapter = listStoryAdapter
                 binding.rvStories.hasFixedSize()
                 listStoryAdapter.setStories(listStoryItem)
+                listStoryAdapter.setOnItemClickCallback(object : ListStoryAdapter.OnItemClickCallback {
+                    override fun onItemClicked(listStoryItem: ListStoryItem) {
+                        showSelectedStory(listStoryItem)
+                    }
+                })
             }
+        }
+    }
+
+    private fun showSelectedStory(listStoryItem: ListStoryItem) {
+        val intent = Intent(applicationContext, DetailActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun showProgress(state: Boolean) {
+        if (state) {
+            progressDialog.showProgressDialog()
+        } else {
+            progressDialog.dismissProgressDialog()
         }
     }
 

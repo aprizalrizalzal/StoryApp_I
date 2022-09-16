@@ -6,12 +6,14 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModelProvider
 import me.zal.rizal.aprizal.storyapp.R
+import me.zal.rizal.aprizal.storyapp.addition.CustomProgressDialog
 import me.zal.rizal.aprizal.storyapp.databinding.ActivitySignInBinding
 import me.zal.rizal.aprizal.storyapp.main.StoryActivity
 import me.zal.rizal.aprizal.storyapp.main.UsersPreference
@@ -24,6 +26,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class SignInActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignInBinding
+    private lateinit var progressDialog: CustomProgressDialog
     private lateinit var email: String
     private lateinit var password: String
     private var validateField: Boolean = false
@@ -35,6 +38,7 @@ class SignInActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         playAnimation()
+        progressDialog = CustomProgressDialog(this)
 
         binding.btnSignIn.setOnClickListener {
             email = binding.tietEmail.text.toString()
@@ -46,7 +50,6 @@ class SignInActivity : AppCompatActivity() {
 
         binding.tvSignInToSignUp.setOnClickListener {
             val intent = Intent(applicationContext, SignUpActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
         }
     }
@@ -100,11 +103,10 @@ class SignInActivity : AppCompatActivity() {
             ViewModelFactory(UsersPreference.getInstance(dataStore))
         )[SignInViewModel::class.java]
 
-        signInViewModel.signIn(email, password)
+        signInViewModel.setSignIn(email, password)
         signInViewModel.getSignInResponse().observe(this) { signInResponse ->
             if (signInResponse != null) {
                 val intent = Intent(applicationContext, StoryActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                 startActivity(intent)
                 finish()
             }
@@ -121,6 +123,19 @@ class SignInActivity : AppCompatActivity() {
                     )
                 )
             }
+        }
+
+        signInViewModel.getIsProgress().observe(this) { showProgress(it) }
+        signInViewModel.getMessage().observe(this) { message ->
+            Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showProgress(state: Boolean) {
+        if (state) {
+            progressDialog.showProgressDialog()
+        } else {
+            progressDialog.dismissProgressDialog()
         }
     }
 }

@@ -3,6 +3,7 @@ package me.zal.rizal.aprizal.storyapp.retrofit
 import me.zal.rizal.aprizal.storyapp.model.SignInModel
 import me.zal.rizal.aprizal.storyapp.model.SignInResponse
 import me.zal.rizal.aprizal.storyapp.model.SignUpModel
+import me.zal.rizal.aprizal.storyapp.model.SignUpResponse
 import me.zal.rizal.aprizal.storyapp.model.story.StoriesModel
 import me.zal.rizal.aprizal.storyapp.model.story.StoriesResponse
 import okhttp3.MultipartBody
@@ -14,7 +15,7 @@ interface ApiService {
     @POST("register")
     fun register(
         @Body signUpModel: SignUpModel?
-    ): Call<SignUpModel?>?
+    ): Call<SignUpResponse?>?
 
     @POST("login")
     fun login(
@@ -26,7 +27,7 @@ interface ApiService {
     fun addNewStory(
         @Header("Authorization") token: String,
         @Part file: MultipartBody.Part,
-        @Body storiesModel: StoriesModel?
+//        @Body storiesModel: StoriesModel?
     ): Call<StoriesModel?>?
 
     @GET("stories")
