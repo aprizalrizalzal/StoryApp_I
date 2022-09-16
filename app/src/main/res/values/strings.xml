@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">Story App</string>
+    <string name="app_name" translatable="false">Story Apps</string>
     <string name="name">Name</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
-    <string name="forget_password">Forget Password</string>
+    <string name="forget_password">Forget Password?</string>
     <string name="sign_up">Sign Up</string>
     <string name="sign_in">Sign In</string>
     <string name="sign_up_to_sign_in">Already have an account?</string>
@@ -21,4 +21,5 @@
     <string name="upload">Upload</string>
     <string name="loading">Wait still in process.!</string>
     <string name="detail_story">Detail Story</string>
+    <string name="language">Language</string>
 </resources>

@@ -31,6 +31,8 @@
             android:id="@+id/tv_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/fab_margin"
+            android:textStyle="bold"
             app:layout_constraintTop_toBottomOf="@+id/img_card_story"
             tools:text="Name" />
 

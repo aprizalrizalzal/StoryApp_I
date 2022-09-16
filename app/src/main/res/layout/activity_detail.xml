@@ -1,8 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".main.DetailActivity">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/fab_margin">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/img_card_story"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/card_size_detail"
+            android:transitionName="card_story"
+            android:background="@android:color/white"
+            android:contentDescription="@string/photo"
+            android:elevation="@dimen/elevation_image"
+            android:scaleType="centerCrop"
+            app:shapeAppearance="@style/ShapeAppearanceOverlay.App.RectangleImageView"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ImageContrastCheck"
+            tools:src="@tools:sample/avatars" />
+
+        <TextView
+            android:id="@+id/tv_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:transitionName="name"
+            android:layout_marginTop="@dimen/fab_margin"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@+id/img_card_story"
+            tools:text="Name" />
+
+        <TextView
+            android:id="@+id/tv_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:transitionName="description"
+            app:layout_constraintTop_toBottomOf="@+id/tv_name"
+            tools:text="Description" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

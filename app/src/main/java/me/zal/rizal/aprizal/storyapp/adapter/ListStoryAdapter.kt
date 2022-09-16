@@ -51,7 +51,9 @@ class ListStoryAdapter(private val listStoryItem: ArrayList<ListStoryItem>) :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(listStoryItem[position])
-        holder.itemView.setOnClickListener { onItemClickCallback.onItemClicked(listStoryItem[holder.adapterPosition]) }
+        holder.itemView.setOnClickListener {
+            onItemClickCallback.onItemClicked(holder, listStoryItem[holder.adapterPosition])
+        }
     }
 
     override fun getItemCount(): Int {
@@ -59,7 +61,10 @@ class ListStoryAdapter(private val listStoryItem: ArrayList<ListStoryItem>) :
     }
 
     interface OnItemClickCallback {
-        fun onItemClicked(listStoryItem: ListStoryItem)
+        fun onItemClicked(
+            viewHolder: ViewHolder,
+            listStoryItem: ListStoryItem
+        )
     }
 
 }

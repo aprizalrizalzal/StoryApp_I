@@ -131,7 +131,7 @@ class SignUpActivity : AppCompatActivity() {
         if (state) {
             progressDialog.showProgressDialog()
         } else {
-            progressDialog.dismissProgressDialog()
+            progressDialog.runCatching { dismissProgressDialog() }
         }
     }
 }

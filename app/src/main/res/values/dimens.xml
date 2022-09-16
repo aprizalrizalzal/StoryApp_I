@@ -6,6 +6,7 @@
     <dimen name="icon_size">64dp</dimen>
     <dimen name="progress_size">96dp</dimen>
     <dimen name="card_size">256dp</dimen>
+    <dimen name="card_size_detail">512dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="elevation_image">2dp</dimen>
 </resources>

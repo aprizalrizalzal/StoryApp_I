@@ -3,10 +3,13 @@ package me.zal.rizal.aprizal.storyapp.main
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityOptionsCompat
+import androidx.core.util.Pair
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -53,6 +56,11 @@ class StoryActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.action_language) {
+            val intent = Intent(Settings.ACTION_LOCALE_SETTINGS)
+            startActivity(intent)
+        }
+
         if (item.itemId == R.id.action_sign_out) {
             storyViewModel.signOut()
 
@@ -69,7 +77,9 @@ class StoryActivity : AppCompatActivity() {
             ViewModelFactory(UsersPreference.getInstance(dataStore))
         )[StoryViewModel::class.java]
 
-        storyViewModel.getIsProgress().observe(this) { showProgress(it) }
+        storyViewModel.getIsProgress().observe(this) {
+            showProgress(it)
+        }
         storyViewModel.getUser().observe(this) { user ->
             when {
                 user.isLogin && user.token.isNotEmpty() -> {
@@ -98,25 +108,42 @@ class StoryActivity : AppCompatActivity() {
                 binding.rvStories.adapter = listStoryAdapter
                 binding.rvStories.hasFixedSize()
                 listStoryAdapter.setStories(listStoryItem)
-                listStoryAdapter.setOnItemClickCallback(object : ListStoryAdapter.OnItemClickCallback {
-                    override fun onItemClicked(listStoryItem: ListStoryItem) {
-                        showSelectedStory(listStoryItem)
+                listStoryAdapter.setOnItemClickCallback(object :
+                    ListStoryAdapter.OnItemClickCallback {
+                    override fun onItemClicked(
+                        viewHolder: ListStoryAdapter.ViewHolder,
+                        listStoryItem: ListStoryItem
+                    ) {
+                        showSelectedStory(viewHolder, listStoryItem)
                     }
                 })
             }
         }
     }
 
-    private fun showSelectedStory(listStoryItem: ListStoryItem) {
+    private fun showSelectedStory(
+        viewHolder: ListStoryAdapter.ViewHolder,
+        listStoryItem: ListStoryItem
+    ) {
+
+        val optionsCompat: ActivityOptionsCompat =
+            ActivityOptionsCompat.makeSceneTransitionAnimation(
+                this,
+                Pair(viewHolder.imgCardStory, "card_story"),
+                Pair(viewHolder.tvName, "name"),
+                Pair(viewHolder.tvDescription, "description"),
+            )
+
         val intent = Intent(applicationContext, DetailActivity::class.java)
-        startActivity(intent)
+        intent.putExtra("extra_list_story_item", listStoryItem)
+        startActivity(intent, optionsCompat.toBundle())
     }
 
     private fun showProgress(state: Boolean) {
         if (state) {
             progressDialog.showProgressDialog()
         } else {
-            progressDialog.dismissProgressDialog()
+            progressDialog.runCatching { dismissProgressDialog() }
         }
     }
 

@@ -135,7 +135,7 @@ class SignInActivity : AppCompatActivity() {
         if (state) {
             progressDialog.showProgressDialog()
         } else {
-            progressDialog.dismissProgressDialog()
+            progressDialog.runCatching { dismissProgressDialog() }
         }
     }
 }
